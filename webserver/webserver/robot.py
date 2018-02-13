@@ -43,8 +43,8 @@ class RobotButtons:
 class Robot:
     def __init__(self):
         self.buttons = RobotButtons()
-        self.motor_left = Motor(0, 0, 0)
-        self.motor_right = Motor(0, 0, 0)
+        self.motor_left = Motor(17, 27, 22)
+        self.motor_right = Motor(10, 9, 11)
 
     def update(self):
         if not RPI: return
