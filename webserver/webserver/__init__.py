@@ -68,5 +68,7 @@ app['robot'] = Robot()
 app.router.add_get('/ws', websocket_handler)
 app.router.add_static('/', 'static')
 
-web.run_app(app, host='127.0.0.1', port=12000)
+web.run_app(app, host='0.0.0.0', port=12000)
+
+
 
