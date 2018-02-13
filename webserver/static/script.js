@@ -54,20 +54,41 @@ function socket_send(msg) {
 }
 
 window.onload = function(){
-open_socket(JSON.stringify("hello"));
+	open_socket(JSON.stringify("hello"));
 
-$("#button_forward").mousedown(function() {
-	console.log("button forward down");
-	socket_send("mousedown forward");
-});
-$("#button_forward").mouseup(function() {
-	console.log("button forward up");
-	socket_send("mouseup forward");
-});
-$("#button_forward").mouseleave(function() {
-	console.log("button forward leave");
-	socket_send("mouseleave forward");
-});
+
+	$("#button_forward").mousedown(function() {
+		socket_send("mousedown forward");
+	}).mouseup(function() {
+		socket_send("mouseup forward");
+	}).mouseleave(function() {
+		socket_send("mouseleave forward");
+	});
+
+	$("#button_back").mousedown(function() {
+		socket_send("mousedown back");
+	}).mouseup(function() {
+		socket_send("mouseup back");
+	}).mouseleave(function() {
+		socket_send("mouseleave back");
+	});
+
+	$("#button_left").mousedown(function() {
+		socket_send("mousedown left");
+	}).mouseup(function() {
+		socket_send("mouseup left");
+	}).mouseleave(function() {
+		socket_send("mouseleave left");
+	});
+
+	$("#button_right").mousedown(function() {
+		socket_send("mousedown right");
+	}).mouseup(function() {
+		socket_send("mouseup right");
+	}).mouseleave(function() {
+		socket_send("mouseleave right");
+	});
+
 }
 
 
