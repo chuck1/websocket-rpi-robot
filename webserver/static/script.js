@@ -1,10 +1,7 @@
 
 var socket = null;
 
-/*var ws_url = "ws://192.168.56.2:12000/ws";*/
-var ws_url = "ws://localhost:12000/ws";
-
-function open_socket(msg) {
+function open_socket(ws_url, msg) {
 
 	socket = new WebSocket(ws_url);
 
@@ -54,7 +51,9 @@ function socket_send(msg) {
 }
 
 window.onload = function(){
-	open_socket(JSON.stringify("hello"));
+	var split = window.location.href.split("/");
+	var ws_url = "ws://" + split[2] + "/ws";
+	open_socket(ws_url, JSON.stringify("hello"));
 
 
 	$("#button_forward").mousedown(function() {
