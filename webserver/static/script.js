@@ -23,13 +23,47 @@ function open_socket(ws_url, msg) {
 	};
 
 	// Listen for messages
-	socket.onmessage = function (event) {
-		console.log('Message from server', event.data);
-		data = JSON.parse(event.data);
+	socket.onmessage = function (evt) {
+		console.log('Message from server', evt.data);
+		var msg = JSON.parse(evt.data);
+		if(msg['type']=='img') {
+			var enc = new TextEncoder("utf-8");
+			var data = msg['data'];
+			var data_encoded = enc.encode(data);
 
-		if(data.type == 'response_sheet_data')
-		{
-			apply_sheet_data(data);
+			console.log("data", data);
+			console.log("data encoded", data_encoded);
+			console.log(atob(data));
+			
+			var byteCharacters = atob(data);
+			var byteNumbers = new Array(byteCharacters.length);
+			for (var i = 0; i < byteCharacters.length; i++) {
+				byteNumbers[i] = byteCharacters.charCodeAt(i);
+			}
+			var byteArray = new Uint8Array(byteNumbers);
+
+			//var bytes = new Uint8Array(msg['data']);
+			//console.log("bytes", bytes);
+			
+			//var blob = new Blob([data_encoded.buffer], {type:'image/jpg'});
+			//var blob = new Blob(["data:image/jpg;base64," + data], {type:'image/jpg'});
+			//var blob = new Blob(["base64," + data], {type:'image/jpg'});
+			var blob = new Blob([byteArray], {type: 'image/jpg'});
+
+		        var url = URL.createObjectURL(blob);
+			var image = document.getElementById("img");
+			var img = new Image();
+		        img.onload = function() {
+				console.log("img onload");
+				var ctx = image.getContext("2d");
+				ctx.drawImage(img, 0, 0);
+			}
+			img.src = url;
+			
+			$("#img").attr("src", url);
+			//$("#img").attr("src", "data:image/jpg;base64," + data);
+			
+			window.open(url, 'Image', 'resizable=1');
 		}
 	};
 }
@@ -86,6 +120,10 @@ window.onload = function(){
 		socket_send("mouseup right");
 	}).mouseleave(function() {
 		socket_send("mouseleave right");
+	});
+		
+	$("#button_img").click(function() {
+		socket_send("get image");
 	});
 
 }

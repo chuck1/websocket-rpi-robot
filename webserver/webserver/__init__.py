@@ -1,8 +1,15 @@
-
+import base64
 import aiohttp
 from aiohttp import web
 
 from robot import *
+
+async def send_image(ws):
+
+    with open("panda.jpg", "rb") as f:
+        data = base64.b64encode(f.read()).decode()
+
+    await ws.send_json({'type':'img', 'data':data})
 
 async def websocket_handler(request):
     
@@ -44,6 +51,8 @@ async def websocket_handler(request):
                 robot.buttons.right = False
             elif msg.data == 'mouseleave right':
                 robot.buttons.right = False
+            elif msg.data == 'get image':
+                await send_image(ws)
         
         elif msg.type == aiohttp.WSMsgType.ERROR:
             print('ws connection closed with exception %s' % ws.exception())
