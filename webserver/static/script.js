@@ -26,6 +26,7 @@ function open_socket(ws_url, msg) {
 	socket.onmessage = function (evt) {
 		console.log('Message from server', evt.data);
 		var msg = JSON.parse(evt.data);
+		
 		if(msg['type']=='img') {
 			var enc = new TextEncoder("utf-8");
 			var data = msg['data'];
@@ -43,6 +44,9 @@ function open_socket(ws_url, msg) {
 		        var url = URL.createObjectURL(blob);
 			
 			$("#img").attr("src", url);
+		}
+		else if(msg['type']=='text') {
+			console.log(msg['data']);
 		}
 	};
 }
@@ -65,7 +69,13 @@ function socket_send(msg) {
 
 window.onload = function(){
 	var split = window.location.href.split("/");
+
 	var ws_url = "ws://" + split[2] + "/ws";
+	//var ws_url = "http://" + split[2] + "/ws";
+	//var ws_url = "ws://" + split[2].split(":")[0] + ":12002" + "/ws";
+	
+	console.log("ws_url", ws_url);
+
 	open_socket(ws_url, JSON.stringify("hello"));
 
 
@@ -103,6 +113,10 @@ window.onload = function(){
 		
 	$("#button_img").click(function() {
 		socket_send("get image");
+	});
+
+	$("#button_test_receive").click(function() {
+		socket_send("test receive");
 	});
 
 }

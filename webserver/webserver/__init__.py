@@ -28,8 +28,9 @@ async def send_image(ws):
     
     data = image_data_2()
     data = base64.b64encode(data).decode()
-
-    await ws.send_json({'type':'img', 'data':data})
+    msg = {'type':'img', 'data':data}
+    print('sending', msg)
+    await ws.send_json(msg)
 
 async def websocket_handler(request):
     
@@ -73,6 +74,8 @@ async def websocket_handler(request):
                 robot.buttons.right = False
             elif msg.data == 'get image':
                 await send_image(ws)
+            elif msg.data == 'test receive':
+                await ws.send_json({'type':'text', 'data':'hello'})
         
         elif msg.type == aiohttp.WSMsgType.ERROR:
             print('ws connection closed with exception %s' % ws.exception())
@@ -97,7 +100,7 @@ app['robot'] = Robot()
 app.router.add_get('/ws', websocket_handler)
 app.router.add_static('/', 'static')
 
-web.run_app(app, host='0.0.0.0', port=12000)
+web.run_app(app, host='0.0.0.0', port=12001)
 
 
 
