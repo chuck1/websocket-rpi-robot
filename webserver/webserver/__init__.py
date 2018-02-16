@@ -1,13 +1,33 @@
 import base64
 import aiohttp
 from aiohttp import web
+import cv2
 
 from robot import *
 
-async def send_image(ws):
+cap = cv2.VideoCapture(0)
 
+def image_data():
     with open("panda.jpg", "rb") as f:
-        data = base64.b64encode(f.read()).decode()
+        data = f.read()
+    return data
+
+def image_data_2():
+
+    cap = cv2.VideoCapture("panda.jpg")
+
+    res, frame = cap.read()
+
+    encode_param=[int(cv2.IMWRITE_JPEG_QUALITY),90]
+
+    result, imgencode = cv2.imencode('.jpg', frame, encode_param)
+
+    return imgencode.tostring()
+
+async def send_image(ws):
+    
+    data = image_data_2()
+    data = base64.b64encode(data).decode()
 
     await ws.send_json({'type':'img', 'data':data})
 
