@@ -1,5 +1,57 @@
 
 var socket = null;
+var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function string_to_int_array_8(data) {
+	var byteCharacters = atob(data);
+	var byteNumbers = new Array(byteCharacters.length);
+	for (var i = 0; i < byteCharacters.length; i++) {
+		byteNumbers[i] = byteCharacters.charCodeAt(i);
+	}
+	var byteArray = new Uint8Array(byteNumbers);
+	return byteArray;
+}
+
+var CHUNK = 256;
+
+var audioBufferLength = CHUNK * 10;
+var audioBuffer = new Uint8Array(audioBufferLength);
+
+//var chunks_played = 0;
+//var chunks_received = 0;
+var position_play = 0;
+var position_receive = 0;
+
+var node = audioCtx.createScriptProcessor(CHUNK, 1, 1);
+
+node.onaudioprocess = function(e) {
+
+}
+
+function play() {
+	var source = audioCtx.createBufferSource();
+	// set the buffer in the AudioBufferSourceNode
+	source.buffer = myArrayBuffer;
+	// connect the AudioBufferSourceNode to the
+	// destination so we can hear the sound
+	source.connect(node);
+	node.connect(audioCtx.destination);
+	source.loop = true;
+	//source.onended = play;
+	//create_data();
+	source.start();
+}
+
+function receive_audio(data) {
+	bytes = string_to_int_array_8(data);
+
+	console.log("audio", bytes);
+	for(var i = 0; i < CHUNK; ++i) {
+		audioBuffer[(i + position_receive) % audioBufferLength] = bytes[i];
+	}
+	position_receive = (position_receive + CHUNK) % audioBufferLength;
+	console.log("position receive:", position_receive);
+}
 
 function open_socket(ws_url, msg) {
 
@@ -26,24 +78,20 @@ function open_socket(ws_url, msg) {
 	socket.onmessage = function (evt) {
 		console.log('Message from server', evt.data);
 		var msg = JSON.parse(evt.data);
-		
-		if(msg['type']=='img') {
-			var enc = new TextEncoder("utf-8");
-			var data = msg['data'];
-			var data_encoded = enc.encode(data);
 
-			var byteCharacters = atob(data);
-			var byteNumbers = new Array(byteCharacters.length);
-			for (var i = 0; i < byteCharacters.length; i++) {
-				byteNumbers[i] = byteCharacters.charCodeAt(i);
-			}
-			var byteArray = new Uint8Array(byteNumbers);
+		if(msg['type']=='img') {
+			var data = msg['data'];
+
+			var byteArray = string_to_int_array_64(data);
 
 			var blob = new Blob([byteArray], {type: 'image/jpg'});
 
-		        var url = URL.createObjectURL(blob);
-			
+			var url = URL.createObjectURL(blob);
+
 			$("#img").attr("src", url);
+		}
+		else if(msg['type'] == 'audio') {
+			receive_audio(msg['data']);
 		}
 		else if(msg['type']=='text') {
 			console.log(msg['data']);
@@ -73,7 +121,7 @@ window.onload = function(){
 	var ws_url = "ws://" + split[2] + "/ws";
 	//var ws_url = "http://" + split[2] + "/ws";
 	//var ws_url = "ws://" + split[2].split(":")[0] + ":12002" + "/ws";
-	
+
 	console.log("ws_url", ws_url);
 
 	open_socket(ws_url, JSON.stringify("hello"));
@@ -110,13 +158,17 @@ window.onload = function(){
 	}).mouseleave(function() {
 		socket_send("mouseleave right");
 	});
-		
+
 	$("#button_img").click(function() {
 		socket_send("get image");
 	});
 
 	$("#button_test_receive").click(function() {
 		socket_send("test receive");
+	});
+
+	$("#button_test_receive_audio").click(function() {
+		socket_send({"msg":"test receive audio", "position":position_receive});
 	});
 
 }

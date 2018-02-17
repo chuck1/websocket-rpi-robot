@@ -1,9 +1,12 @@
+import math
 import base64
 import aiohttp
 from aiohttp import web
 import cv2
+import numpy as np
 
 from robot import *
+import audio
 
 cap = cv2.VideoCapture(0)
 
@@ -31,6 +34,22 @@ async def send_image(ws):
     msg = {'type':'img', 'data':data}
     print('sending', msg)
     await ws.send_json(msg)
+
+def audio_float_to_bytes(y):
+    y = (y + 1) / 2 * 255
+    y = y.astype(int).tolist()
+    y = bytes(y)
+    return y
+
+async def send_test_audio(ws, position):
+    
+    sampleWidth = 1 / 44100
+    t = (np.arange(audio.CHUNK) + position) * sampleWidth
+    y = np.sin(2 * math.pi * 200 * t)
+    data = audio_float_to_bytes(y)
+    msg = {'type':'audio', 'data':base64.b64encode(data).decode()}
+    await ws.send_json(msg)
+
 
 async def websocket_handler(request):
     
@@ -76,6 +95,9 @@ async def websocket_handler(request):
                 await send_image(ws)
             elif msg.data == 'test receive':
                 await ws.send_json({'type':'text', 'data':'hello'})
+        elif msg.type == aiohttp.WSMsgType.JSON:
+            if msg.data == 'test receive audio':
+                await send_test_audio(ws)
         
         elif msg.type == aiohttp.WSMsgType.ERROR:
             print('ws connection closed with exception %s' % ws.exception())
